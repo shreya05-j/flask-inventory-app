@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }} - Product Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="nav-title">Product Details</div>
+        <div>
+            <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+        </div>
+    </nav>
+    <main>
+        <div class="card">
+            <h2>{{ product.name }}</h2>
+            <ul class="product-info">
+                <li><strong>SKU:</strong> {{ product.sku }}</li>
+                <li><strong>Stock:</strong> {{ product.stock }}</li>
+                <li><strong>Location:</strong> {{ product.location }}</li>
+                <li><strong>Status:</strong> <span class="status {{ product.status|lower|replace(' ', '-') }}">{{ product.status }}</span></li>
+                <li><strong>Min Threshold:</strong> {{ product.min_threshold }}</li>
+                <li><strong>Max Threshold:</strong> {{ product.max_threshold }}</li>
+            </ul>
+            <a href="{{ url_for('edit_product', pid=product.id) }}" class="btn btn-edit">Edit Product</a>
+            <a href="{{ url_for('dashboard') }}" class="btn">Back to Dashboard</a>
+        </div>
+    </main>
+</body>
+</html>

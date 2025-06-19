@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Product - Inventory App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="nav-title">Edit Product</div>
+        <div>
+            <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+        </div>
+    </nav>
+    <main>
+        <div class="form-card">
+            <h2>Edit Product</h2>
+            <form method="POST">
+                <input type="text" name="name" placeholder="Product Name" value="{{ product.name }}" required>
+                <input type="text" name="sku" placeholder="SKU" value="{{ product.sku }}" required>
+                <input type="number" name="stock" placeholder="Stock" value="{{ product.stock }}" required>
+                <input type="text" name="location" placeholder="Location" value="{{ product.location }}" required>
+                <input type="number" name="min_threshold" placeholder="Min Threshold" value="{{ product.min_threshold }}" required>
+                <input type="number" name="max_threshold" placeholder="Max Threshold" value="{{ product.max_threshold }}" required>
+                <button type="submit" class="btn btn-edit">Save Changes</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
