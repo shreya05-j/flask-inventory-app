@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Behavior Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="nav-title">Customer Behavior</div>
+        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+    </nav>
+    <main>
+        <div class="card">
+            <h2>Analyze Customer Behavior</h2>
+            <form method="POST">
+                <input type="text" name="beacon_data" placeholder="Beacon Data (demo)">
+                <input type="text" name="customer_path" placeholder="Customer Path (demo)">
+                <button type="submit" class="btn">Analyze</button>
+            </form>
+            {% if analysis %}
+                <div style="margin-top:1em;">
+                    <strong>Heatmap Hotspots:</strong> {{ analysis.heatmap.hotspots }}<br>
+                    <strong>Recommended Products:</strong> {{ analysis.recommendations }}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vision Checkout & Theft Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="nav-title">Vision Checkout</div>
+        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+    </nav>
+    <main>
+        <div class="card">
+            <h2>Upload Image/Video for Analysis</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="media">
+                <button type="submit" class="btn">Analyze</button>
+            </form>
+            {% if result %}
+                <div style="margin-top:1em;">
+                    <strong>Suspicious Behavior:</strong> {{ 'Yes' if result.suspicious else 'No' }}<br>
+                    <strong>Detected Items:</strong> {{ result.items or 'None' }}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
