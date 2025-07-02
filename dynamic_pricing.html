@@ -1,32 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Dynamic Pricing Engine</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <nav>
-        <div class="nav-title">Dynamic Pricing</div>
-        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
-    </nav>
-    <main>
-        <div class="card">
-            <h2>Dynamic Pricing Recommendation</h2>
-            <form method="POST">
-                <input type="text" name="sku" placeholder="SKU" required>
-                <input type="number" step="0.01" name="current_price" placeholder="Current Price" required>
-                <button type="submit" class="btn">Get Recommendation</button>
-            </form>
-            {% if recommendation %}
-                <div style="margin-top:1em;">
-                    <strong>SKU:</strong> {{ recommendation.sku }}<br>
-                    <strong>Current Price:</strong> {{ recommendation.current_price }}<br>
-                    <strong>Competitor Prices:</strong> {{ recommendation.competitor_prices }}<br>
-                    <strong>Recommended Price:</strong> <span style="color:green;">{{ recommendation.recommended_price }}</span>
-                </div>
-            {% endif %}
-        </div>
-    </main>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Dynamic Pricing{% endblock %}
+
+{% block content %}
+<h2>Dynamic Price Calculator</h2>
+<div class="card">
+    <form id="priceForm">
+        <label>Demand Level</label>
+        <input type="number" id="demand" required>
+
+        <label>Inventory Level</label>
+        <input type="number" id="inventory" required>
+
+        <label>Competitor Price</label>
+        <input type="number" id="competitor" required>
+
+        <button type="submit" class="btn">Calculate Price</button>
+    </form>
+
+    <div id="result" style="margin-top: 1em;"></div>
+</div>
+
+<script>
+document.getElementById("priceForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const demand = document.getElementById("demand").value;
+    const inventory = document.getElementById("inventory").value;
+    const competitor = document.getElementById("competitor").value;
+
+    const res = await fetch("/api/calculate-price", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            demand_level: parseFloat(demand),
+            inventory_level: parseFloat(inventory),
+            competitor_price: parseFloat(competitor)
+        })
+    });
+
+    const data = await res.json();
+    if (data.predicted_price !== undefined) {
+        document.getElementById("result").innerHTML = 
+            `<div class="card"><strong>Recommended Price: ₹${data.predicted_price}</strong></div>`;
+    } else {
+        document.getElementById("result").innerHTML = 
+            `<div class="error">${data.error}</div>`;
+    }
+});
+</script>
+{% endblock %}
