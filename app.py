@@ -1,8 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from functools import wraps
 
+# Initialize app
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a strong, random value
+app.secret_key = 'your_secret_key'
+
+# Register blueprints
+from dynamic_pricing import dynamic_pricing_bp
+from customer_behavior import customer_behavior_bp
+
+app.register_blueprint(dynamic_pricing_bp)
+app.register_blueprint(customer_behavior_bp)
+
 
 # In-memory user "database"
 users = [
@@ -22,7 +31,21 @@ inventory = [
     {'id': 9, 'name': 'Potato', 'sku': '10009', 'stock': 200, 'location': 'Aisle 9', 'min_threshold': 30, 'max_threshold': 150},
     {'id': 10, 'name': 'Onion', 'sku': '10010', 'stock': 40, 'location': 'Aisle 10', 'min_threshold': 20, 'max_threshold': 100}
 ]
+#Calculating dynamic_price for any product
+def calculate_dynamic_price(product):
+    base_price = 10.0  # You can set this dynamically per product later
 
+    # Example pricing logic based on stock levels
+    if product['stock'] == 0:
+        return base_price * 1.5  # Out of stock = raise price
+    elif product['stock'] < product['min_threshold']:
+        return base_price * 1.2  # Low stock = slightly higher price
+    elif product['stock'] > product['max_threshold']:
+        return base_price * 0.8  # Overstock = lower price
+    else:
+        return base_price  # Normal stock = base price
+
+#Getting current status of the product in stock
 def get_status(product):
     if product['stock'] == 0:
         return 'Out of Stock'
@@ -41,6 +64,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+#Route functions
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     error = None
@@ -136,3 +160,54 @@ def edit_product(pid):
 
 if __name__ == '__main__':
     app.run(debug=True)
+#Routing dynamic pricing
+@app.route('/dynamic-pricing', methods=['GET'])
+@login_required
+def dynamic_pricing():
+    return render_template('dynamic_pricing.html')
+
+
+#Customer behavior 
+from flask import render_template
+
+
+@app.route("/customer_behavior", methods=["GET", "POST"])
+def customer_behavior():
+    # If there's any logic from customer_behavior.py to be used, call it here.
+    return render_template("customer_behavior.html")
+
+
+app = Flask(__name__)
+
+@app.route("/customer_behavior", methods=["GET"])
+def customer_behavior_view():
+    # Step 1: Simulate data
+    heatmap_data, paths = customer_behavior.simulate_beacon_data()
+
+    # Step 2: Save heatmap to PNG (auto-generated on each visit)
+    customer_behavior.save_heatmap(heatmap_data)
+
+    # Step 3: Analyze and recommend
+    analysis = {
+        'heatmap': customer_behavior.analyze_heatmap(heatmap_data),
+        'recommendations': customer_behavior.recommend_products(paths[0])
+    }
+
+    # Step 4: Flatten for chart
+    chart_labels = []
+    chart_data = []
+    for y in range(len(heatmap_data)):
+        for x in range(len(heatmap_data[0])):
+            label = f"({x},{y})"
+            count = int(heatmap_data[y][x])
+            if count > 0:
+                chart_labels.append(label)
+                chart_data.append(count)
+
+    return render_template(
+        "customer_behavior.html",
+        analysis=analysis,
+        chart_labels=chart_labels,
+        chart_data=chart_data
+    )
+
