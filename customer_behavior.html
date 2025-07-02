@@ -1,30 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Customer Behavior Analysis</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <title>Customer Behavior</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>#map { height: 500px; }</style>
 </head>
 <body>
-    <nav>
-        <div class="nav-title">Customer Behavior</div>
-        <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
-    </nav>
-    <main>
-        <div class="card">
-            <h2>Analyze Customer Behavior</h2>
-            <form method="POST">
-                <input type="text" name="beacon_data" placeholder="Beacon Data (demo)">
-                <input type="text" name="customer_path" placeholder="Customer Path (demo)">
-                <button type="submit" class="btn">Analyze</button>
-            </form>
-            {% if analysis %}
-                <div style="margin-top:1em;">
-                    <strong>Heatmap Hotspots:</strong> {{ analysis.heatmap.hotspots }}<br>
-                    <strong>Recommended Products:</strong> {{ analysis.recommendations }}
-                </div>
-            {% endif %}
-        </div>
-    </main>
+  <h2>Customer Path Map</h2>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const zoneCoordinates = {
+      "Entrance": [51.505, -0.09],
+      "Aisle 1": [51.505, -0.088],
+      "Aisle 2": [51.506, -0.088],
+      "Aisle 3": [51.506, -0.09],
+      "Checkout": [51.5055, -0.092]
+    };
+
+
+    const map = L.map('map').setView([51.505, -0.09], 18);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © OpenStreetMap contributors',
+    }).addTo(map);
+
+    let pathCoords = [];
+
+    customerPath.forEach(zone => {
+      const coord = zoneCoordinates[zone];
+      if (!coord) return;
+      pathCoords.push(coord);
+      L.circleMarker(coord, {
+        radius: 8,
+        fillColor: '#2563eb',
+        fillOpacity: 0.8,
+        color: '#3b82f6'
+      }).addTo(map).bindPopup(`${zone}: ${dwellTimes[zone]} min`);
+    });
+
+    L.polyline(pathCoords, { color: '#f59e42' }).addTo(map);
+  </script>
 </body>
 </html>
