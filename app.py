@@ -129,6 +129,7 @@ def dashboard():
         filtered_inventory = inventory
     return render_template('dashboard.html', inventory=filtered_inventory, query=query)
 
+
 @app.route('/product/<int:pid>')
 @login_required
 def product_detail(pid):
