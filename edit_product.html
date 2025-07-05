@@ -23,6 +23,11 @@
                 <input type="text" name="location" placeholder="Location" value="{{ product.location }}" required>
                 <input type="number" name="min_threshold" placeholder="Min Threshold" value="{{ product.min_threshold }}" required>
                 <input type="number" name="max_threshold" placeholder="Max Threshold" value="{{ product.max_threshold }}" required>
+
+                <!-- ✅ Base Price Field Added -->
+                <label for="base_price">Base Price:</label>
+                <input type="number" step="0.01" name="base_price" id="base_price" placeholder="Base Price" value="{{ product.base_price }}" required>
+
                 <button type="submit" class="btn btn-edit">Save Changes</button>
             </form>
         </div>
