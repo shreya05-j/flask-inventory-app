@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <title>Dashboard - Inventory App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .price-increase {
+            color: red;
+            font-weight: bold;
+        }
+        .price-decrease {
+            color: green;
+            font-weight: bold;
+        }
+        .price-none {
+            color: black;
+        }
+        .price-na {
+            color: gray;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -33,7 +50,7 @@
                     <th>Stock</th>
                     <th>Location</th>
                     <th>Status</th>
-                    <th>Price</th> <!-- New Price column header -->
+                    <th>Price</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -47,7 +64,17 @@
                     <td>
                         <span class="status {{ product.status|lower|replace(' ', '-') }}">{{ product.status }}</span>
                     </td>
-                    <td>₹{{ product.dynamic_price }}</td> <!-- New price cell -->
+                    <td>
+                        {% if product.dynamic_price == 'N/A' %}
+                            <span class="price-na">N/A</span>
+                        {% elif product.price_change == 'increase' %}
+                            <span class="price-increase">₹{{ product.dynamic_price }}</span>
+                        {% elif product.price_change == 'decrease' %}
+                            <span class="price-decrease">₹{{ product.dynamic_price }}</span>
+                        {% else %}
+                            <span class="price-none">₹{{ product.dynamic_price }}</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <div class="btn-group">
                             <a href="{{ url_for('product_detail', pid=product.id) }}" class="btn btn-small">View</a>
@@ -58,7 +85,7 @@
                 {% endfor %}
                 {% if inventory|length == 0 %}
                 <tr>
-                    <td colspan="7" style="text-align:center; color:#888;">No products found.</td> <!-- ✅ updated colspan -->
+                    <td colspan="7" style="text-align:center; color:#888;">No products found.</td>
                 </tr>
                 {% endif %}
             </tbody>
