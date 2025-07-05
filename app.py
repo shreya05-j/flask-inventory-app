@@ -20,22 +20,24 @@ users = [
 
 # Inventory "database" with 10 sample products
 inventory = [
-    {'id': 1, 'name': 'Apple', 'sku': '10001', 'stock': 50, 'location': 'Aisle 1', 'min_threshold': 10, 'max_threshold': 100},
-    {'id': 2, 'name': 'Banana', 'sku': '10002', 'stock': 5, 'location': 'Aisle 2', 'min_threshold': 10, 'max_threshold': 100},
-    {'id': 3, 'name': 'Orange', 'sku': '10003', 'stock': 25, 'location': 'Aisle 3', 'min_threshold': 10, 'max_threshold': 80},
-    {'id': 4, 'name': 'Milk', 'sku': '10004', 'stock': 0, 'location': 'Aisle 4', 'min_threshold': 5, 'max_threshold': 50},
-    {'id': 5, 'name': 'Bread', 'sku': '10005', 'stock': 15, 'location': 'Aisle 5', 'min_threshold': 8, 'max_threshold': 40},
-    {'id': 6, 'name': 'Eggs', 'sku': '10006', 'stock': 100, 'location': 'Aisle 6', 'min_threshold': 20, 'max_threshold': 120},
-    {'id': 7, 'name': 'Cheese', 'sku': '10007', 'stock': 60, 'location': 'Aisle 7', 'min_threshold': 10, 'max_threshold': 80},
-    {'id': 8, 'name': 'Tomato', 'sku': '10008', 'stock': 8, 'location': 'Aisle 8', 'min_threshold': 10, 'max_threshold': 60},
-    {'id': 9, 'name': 'Potato', 'sku': '10009', 'stock': 200, 'location': 'Aisle 9', 'min_threshold': 30, 'max_threshold': 150},
-    {'id': 10, 'name': 'Onion', 'sku': '10010', 'stock': 40, 'location': 'Aisle 10', 'min_threshold': 20, 'max_threshold': 100}
+    {'id': 1, 'name': 'Apple', 'sku': '10001', 'stock': 50, 'location': 'Aisle 1', 'min_threshold': 10, 'max_threshold': 100, 'base_price': 10.0},
+    {'id': 2, 'name': 'Banana', 'sku': '10002', 'stock': 5, 'location': 'Aisle 2', 'min_threshold': 10, 'max_threshold': 100, 'base_price': 5.0},
+    {'id': 3, 'name': 'Orange', 'sku': '10003', 'stock': 25, 'location': 'Aisle 3', 'min_threshold': 10, 'max_threshold': 80, 'base_price': 8.0},
+    {'id': 4, 'name': 'Milk', 'sku': '10004', 'stock': 0, 'location': 'Aisle 4', 'min_threshold': 5, 'max_threshold': 50, 'base_price': 12.0},
+    {'id': 5, 'name': 'Bread', 'sku': '10005', 'stock': 15, 'location': 'Aisle 5', 'min_threshold': 8, 'max_threshold': 40, 'base_price': 6.0},
+    {'id': 6, 'name': 'Eggs', 'sku': '10006', 'stock': 100, 'location': 'Aisle 6', 'min_threshold': 20, 'max_threshold': 120, 'base_price': 7.5},
+    {'id': 7, 'name': 'Cheese', 'sku': '10007', 'stock': 60, 'location': 'Aisle 7', 'min_threshold': 10, 'max_threshold': 80, 'base_price': 15.0},
+    {'id': 8, 'name': 'Tomato', 'sku': '10008', 'stock': 8, 'location': 'Aisle 8', 'min_threshold': 10, 'max_threshold': 60, 'base_price': 4.5},
+    {'id': 9, 'name': 'Potato', 'sku': '10009', 'stock': 200, 'location': 'Aisle 9', 'min_threshold': 30, 'max_threshold': 150, 'base_price': 3.0},
+    {'id': 10, 'name': 'Onion', 'sku': '10010', 'stock': 40, 'location': 'Aisle 10', 'min_threshold': 20, 'max_threshold': 100, 'base_price': 4.0}
 ]
+
 #Calculating dynamic_price for any product
 def calculate_dynamic_price(product):
     base_price = 10.0  # You can set this dynamically per product later
 
     # Example pricing logic based on stock levels
+    
     if product['stock'] == 0:
         return base_price * 1.5  # Out of stock = raise price
     elif product['stock'] < product['min_threshold']:
@@ -45,16 +47,23 @@ def calculate_dynamic_price(product):
     else:
         return base_price  # Normal stock = base price
 
-#Getting current status of the product in stock
+# Getting current status and calculating dynamic price
 def get_status(product):
+    base_price = product.get('base_price', 0)
+
     if product['stock'] == 0:
+        product['dynamic_price'] = 'N/A'
         return 'Out of Stock'
     elif product['stock'] < product['min_threshold']:
+        product['dynamic_price'] = round(base_price * 1.20, 2)  # 20% increase
         return 'Low'
     elif product['stock'] > product['max_threshold']:
+        product['dynamic_price'] = round(base_price * 0.85, 2)  # 15% discount
         return 'Overstock'
     else:
+        product['dynamic_price'] = round(base_price, 2)         # base price
         return 'Normal'
+
 
 def login_required(f):
     @wraps(f)
@@ -107,6 +116,10 @@ def dashboard():
     query = request.args.get('q', '').strip().lower()
     for product in inventory:
         product['status'] = get_status(product)
+
+        # ✅ Inject price here using a pricing function
+        product['dynamic_price'] = calculate_dynamic_price(product)  # <-- add this line
+
     if query:
         filtered_inventory = [
             p for p in inventory
