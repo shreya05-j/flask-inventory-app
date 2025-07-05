@@ -246,6 +246,79 @@ input:focus {
     box-sizing: border-box;
 }
 
+.page-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 3rem 1rem;
+}
+
+.form-card {
+    background-color: var(--card-bg);
+    padding: 2.5rem 3rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 500px;
+}
+
+.form-card h2.form-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--primary-dark);
+}
+
+form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+form input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: white;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+form input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+form .btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+form .btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.back-link {
+    font-size: 0.95rem;
+    color: var(--primary);
+    text-decoration: none;
+    opacity: 0.8;
+}
+
+.back-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
 
 
 .header-row {
@@ -429,6 +502,79 @@ input:focus {
         align-items: stretch;
         gap: 0.7em;
     }
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.7em;
+    }
+    .search-form {
+        width: 100%;
+    }
+    .search-form input[type="text"] {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* Analysis / Heatmap */
+.analysis-results {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+}
+.analysis-results h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: var(--primary-dark);
+}
+.analysis-results ul {
+    padding-left: 1.2em;
+    margin-bottom: 1rem;
+}
+.analysis-results li {
+    margin-bottom: 0.5em;
+}
+.heatmap-img {
+    width: 100%;
+    max-width: 600px;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.chart-container {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: var(--bg);
+    border-radius: var(--radius);
+}
+.chart-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+    main,
+    .card,
+    .form-card {
+        padding: 1rem;
+        margin: 1rem;
+    }
+    .inventory-table th,
+    .inventory-table td {
+        padding: 0.6rem;
+    }
+    .login-container {
+        padding: 1.3rem 0.5rem;
+    }
+    .header-row,
     .header-actions {
         flex-direction: column;
         align-items: stretch;
