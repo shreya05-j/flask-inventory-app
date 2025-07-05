@@ -8,10 +8,11 @@ app.secret_key = 'your_secret_key'
 # Register blueprints
 from dynamic_pricing import dynamic_pricing_bp
 from customer_behavior import customer_behavior_bp
+from customer_behavior import simulate_beacon_data, save_heatmap, analyze_heatmap, recommend_products
+
 
 app.register_blueprint(dynamic_pricing_bp)
 app.register_blueprint(customer_behavior_bp)
-
 
 # In-memory user "database"
 users = [
@@ -34,36 +35,27 @@ inventory = [
 
 #Calculating dynamic_price for any product
 def calculate_dynamic_price(product):
-    base_price = 10.0  # You can set this dynamically per product later
-
-    # Example pricing logic based on stock levels
-    
-    if product['stock'] == 0:
-        return base_price * 1.5  # Out of stock = raise price
-    elif product['stock'] < product['min_threshold']:
-        return base_price * 1.2  # Low stock = slightly higher price
-    elif product['stock'] > product['max_threshold']:
-        return base_price * 0.8  # Overstock = lower price
-    else:
-        return base_price  # Normal stock = base price
-
-# Getting current status and calculating dynamic price
-def get_status(product):
     base_price = product.get('base_price', 0)
-
     if product['stock'] == 0:
-        product['dynamic_price'] = 'N/A'
+        return round(base_price * 1.5, 2)
+    elif product['stock'] < product['min_threshold']:
+        return round(base_price * 1.2, 2)
+    elif product['stock'] > product['max_threshold']:
+        return round(base_price * 0.85, 2)
+    else:
+        return round(base_price, 2)
+
+def get_status(product):
+    dynamic_price = calculate_dynamic_price(product)
+    product['dynamic_price'] = dynamic_price
+    if product['stock'] == 0:
         return 'Out of Stock'
     elif product['stock'] < product['min_threshold']:
-        product['dynamic_price'] = round(base_price * 1.20, 2)  # 20% increase
         return 'Low'
     elif product['stock'] > product['max_threshold']:
-        product['dynamic_price'] = round(base_price * 0.85, 2)  # 15% discount
         return 'Overstock'
     else:
-        product['dynamic_price'] = round(base_price, 2)         # base price
         return 'Normal'
-
 
 def login_required(f):
     @wraps(f)
@@ -73,7 +65,33 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-#Route functions
+last_prices = {}
+
+@app.route('/', methods=['GET'])
+@login_required
+def dashboard():
+    query = request.args.get('q', '').strip().lower()
+    for product in inventory:
+        product['status'] = get_status(product)
+        prev_price = last_prices.get(product['id'], product.get('base_price', 0))
+        current_price = product['dynamic_price']
+        if current_price == 'N/A':
+            product['price_change'] = 'none'
+        elif current_price > prev_price:
+            product['price_change'] = 'increase'
+        elif current_price < prev_price:
+            product['price_change'] = 'decrease'
+        else:
+            product['price_change'] = 'none'
+        last_prices[product['id']] = current_price
+
+    filtered_inventory = [
+        p for p in inventory
+        if query in p['name'].lower() or query in p['sku'].lower() or query in p['location'].lower()
+    ] if query else inventory
+
+    return render_template('dashboard.html', inventory=filtered_inventory, query=query)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     error = None
@@ -110,26 +128,6 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
-@app.route('/', methods=['GET'])
-@login_required
-def dashboard():
-    query = request.args.get('q', '').strip().lower()
-    for product in inventory:
-        product['status'] = get_status(product)
-
-        # ✅ Inject price here using a pricing function
-        product['dynamic_price'] = calculate_dynamic_price(product)  # <-- add this line
-
-    if query:
-        filtered_inventory = [
-            p for p in inventory
-            if query in p['name'].lower() or query in p['sku'].lower() or query in p['location'].lower()
-        ]
-    else:
-        filtered_inventory = inventory
-    return render_template('dashboard.html', inventory=filtered_inventory, query=query)
-
-
 @app.route('/product/<int:pid>')
 @login_required
 def product_detail(pid):
@@ -151,7 +149,8 @@ def add_product():
             'stock': int(request.form['stock']),
             'location': request.form['location'],
             'min_threshold': int(request.form['min_threshold']),
-            'max_threshold': int(request.form['max_threshold'])
+            'max_threshold': int(request.form['max_threshold']),
+            'base_price': float(request.form['base_price'])
         })
         return redirect(url_for('dashboard'))
     return render_template('add_product.html')
@@ -169,45 +168,25 @@ def edit_product(pid):
         product['location'] = request.form['location']
         product['min_threshold'] = int(request.form['min_threshold'])
         product['max_threshold'] = int(request.form['max_threshold'])
+        product['base_price'] = float(request.form['base_price'])
         return redirect(url_for('dashboard'))
     return render_template('edit_product.html', product=product)
 
-if __name__ == '__main__':
-    app.run(debug=True)
-#Routing dynamic pricing
 @app.route('/dynamic-pricing', methods=['GET'])
 @login_required
 def dynamic_pricing():
     return render_template('dynamic_pricing.html')
 
-
-#Customer behavior 
-from flask import render_template
-
-
-@app.route("/customer_behavior", methods=["GET", "POST"])
-def customer_behavior():
-    # If there's any logic from customer_behavior.py to be used, call it here.
-    return render_template("customer_behavior.html")
-
-
-app = Flask(__name__)
-
-@app.route("/customer_behavior", methods=["GET"])
+@app.route('/customer_behavior', methods=['GET'])
+@login_required
 def customer_behavior_view():
-    # Step 1: Simulate data
-    heatmap_data, paths = customer_behavior.simulate_beacon_data()
-
-    # Step 2: Save heatmap to PNG (auto-generated on each visit)
-    customer_behavior.save_heatmap(heatmap_data)
-
-    # Step 3: Analyze and recommend
+    from customer_behavior import simulate_beacon_data, save_heatmap, analyze_heatmap, recommend_products
+    heatmap_data, paths = simulate_beacon_data()
+    save_heatmap(heatmap_data)
     analysis = {
-        'heatmap': customer_behavior.analyze_heatmap(heatmap_data),
-        'recommendations': customer_behavior.recommend_products(paths[0])
+        'heatmap': analyze_heatmap(heatmap_data),
+        'recommendations': recommend_products(paths[0])
     }
-
-    # Step 4: Flatten for chart
     chart_labels = []
     chart_data = []
     for y in range(len(heatmap_data)):
@@ -225,3 +204,5 @@ def customer_behavior_view():
         chart_data=chart_data
     )
 
+if __name__ == '__main__':
+    app.run(debug=True)
