@@ -15,17 +15,15 @@
     </nav>
     <main>
         <div class="header-row">
-    <h2>Product Inventory</h2>
-    <div class="header-actions">
-        <form method="get" action="{{ url_for('dashboard') }}" class="search-form">
-            <input type="text" name="q" placeholder="Search by name, SKU, or location" value="{{ query or '' }}">
-            <button type="submit" class="btn btn-small">Search</button>
-        </form>
-        <a href="{{ url_for('add_product') }}" class="btn add-btn">+ Add Product</a>
-    </div>
-
-
-
+            <h2>Product Inventory</h2>
+            <div class="header-actions">
+                <form method="get" action="{{ url_for('dashboard') }}" class="search-form">
+                    <input type="text" name="q" placeholder="Search by name, SKU, or location" value="{{ query or '' }}">
+                    <button type="submit" class="btn btn-small">Search</button>
+                </form>
+                <a href="{{ url_for('add_product') }}" class="btn add-btn">+ Add Product</a>
+            </div>
+        </div>
 
         <table class="inventory-table">
             <thead>
@@ -35,6 +33,7 @@
                     <th>Stock</th>
                     <th>Location</th>
                     <th>Status</th>
+                    <th>Price</th> <!-- New Price column header -->
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -48,6 +47,7 @@
                     <td>
                         <span class="status {{ product.status|lower|replace(' ', '-') }}">{{ product.status }}</span>
                     </td>
+                    <td>₹{{ product.dynamic_price }}</td> <!-- New price cell -->
                     <td>
                         <div class="btn-group">
                             <a href="{{ url_for('product_detail', pid=product.id) }}" class="btn btn-small">View</a>
@@ -58,7 +58,7 @@
                 {% endfor %}
                 {% if inventory|length == 0 %}
                 <tr>
-                    <td colspan="6" style="text-align:center; color:#888;">No products found.</td>
+                    <td colspan="7" style="text-align:center; color:#888;">No products found.</td> <!-- ✅ updated colspan -->
                 </tr>
                 {% endif %}
             </tbody>
