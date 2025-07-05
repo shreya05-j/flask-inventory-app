@@ -1,31 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Product - Inventory App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <nav>
-        <div class="nav-title">Add Product</div>
-        <div>
-            <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
-            <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+{% extends "base.html" %}
+{% block content %}
+<div class="page-container">
+    <div class="form-card">
+        <h2 class="form-title">➕ Add New Product</h2>
+        <form method="post">
+            <label for="name">Name:</label>
+            <input type="text" name="name" required>
+
+            <label for="sku">SKU:</label>
+            <input type="text" name="sku" required>
+
+            <label for="stock">Stock:</label>
+            <input type="number" name="stock" min="0" required>
+
+            <label for="location">Location:</label>
+            <input type="text" name="location" required>
+
+            <label for="min_threshold">Min Threshold:</label>
+            <input type="number" name="min_threshold" min="0" required>
+
+            <label for="max_threshold">Max Threshold:</label>
+            <input type="number" name="max_threshold" min="0" required>
+
+            <label for="base_price">Base Price (₹):</label>
+            <input type="number" name="base_price" step="0.01" min="0" required>
+
+            <button type="submit" class="btn">💾 Add Product</button>
+        </form>
+        <div style="text-align:center; margin-top:1em;">
+            <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
         </div>
-    </nav>
-    <main>
-        <div class="form-card">
-            <h2>Add New Product</h2>
-            <form method="POST">
-                <input type="text" name="name" placeholder="Product Name" required>
-                <input type="text" name="sku" placeholder="SKU" required>
-                <input type="number" name="stock" placeholder="Stock" required>
-                <input type="text" name="location" placeholder="Location" required>
-                <input type="number" name="min_threshold" placeholder="Min Threshold" required>
-                <input type="number" name="max_threshold" placeholder="Max Threshold" required>
-                <button type="submit" class="btn">Add Product</button>
-            </form>
-        </div>
-    </main>
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}
