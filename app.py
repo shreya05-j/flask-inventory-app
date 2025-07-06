@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from functools import wraps
-
+import firebase_admin
+from firebase_admin import credentials, auth as firebase_auth
+from flask_migrate import Migrate
+from authlib.integrations.flask_client import OAuth
 # Initialize app
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -13,11 +16,43 @@ from customer_behavior import simulate_beacon_data, save_heatmap, analyze_heatma
 
 app.register_blueprint(dynamic_pricing_bp)
 app.register_blueprint(customer_behavior_bp)
+app.secret_key = os.getenv("SECRET_KEY", 'your_secret_key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SERVER_NAME'] = 'localhost:5000'  # Important for OAuth redirects
 
+# Initialize extensions
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 # In-memory user "database"
 users = [
     {'username': 'admin', 'password': 'admin'}
 ]
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(20))
+    is_verified = db.Column(db.Boolean, default=False)
+    last_login = db.Column(db.DateTime)
+# Firebase Setup
+if not firebase_admin._apps:
+    cred = credentials.Certificate("firebase_key.json")
+    firebase_admin.initialize_app(cred)
+
+# OAuth Setup
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    access_token_url='https://oauth2.googleapis.com/token',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    client_kwargs={'scope': 'openid email profile'},
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration'
+)
 
 # Inventory "database" with 10 sample products
 inventory = [
@@ -97,36 +132,93 @@ def register():
     error = None
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
-        if any(u['username'] == username for u in users):
-            error = 'Username already exists.'
-        elif not username or not password:
-            error = 'Please fill out all fields.'
+        confirm = request.form['confirm']
+        phone = request.form['phone']
+
+        if password != confirm:
+            error = 'Passwords do not match.'
+        elif User.query.filter((User.username == username) | (User.email == email)).first():
+            error = 'Username or email already exists.'
         else:
-            users.append({'username': username, 'password': password})
+            hashed_password = generate_password_hash(password)
+            new_user = User(username=username, email=email, password=hashed_password, phone=phone)
+            db.session.add(new_user)
+            db.session.commit()
+            send_confirmation_email(email, username)
+            flash('Registered successfully. Please login.', 'success')
             return redirect(url_for('login'))
     return render_template('register.html', error=error)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
     if request.method == 'POST':
-        username = request.form['username']
+        username_or_email = request.form['username']
         password = request.form['password']
-        user = next((u for u in users if u['username'] == username and u['password'] == password), None)
-        if user:
-            session['logged_in'] = True
-            session['username'] = username
+        user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
+        if user and check_password_hash(user.password, password):
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            session['user_id'] = user.id
             return redirect(url_for('dashboard'))
         else:
-            error = 'Invalid credentials.'
-    return render_template('login.html', error=error)
+            error = "Invalid credentials"
+    return render_template("login.html", error=error)
 
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
-    session.pop('username', None)
+    session.clear()
     return redirect(url_for('login'))
+@app.route('/firebase-login', methods=['POST'])
+def firebase_login():
+    try:
+        id_token = request.json.get('idToken')
+        decoded_token = firebase_auth.verify_id_token(id_token)
+        email = decoded_token['email']
+        name = decoded_token.get('name', 'User')
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(username=name, email=email, password='firebase_user', phone='0000000000')
+            db.session.add(user)
+            db.session.commit()
+@app.route('/login/google')
+def login_google():
+    # Use the exact redirect URI that matches your Google Cloud Console
+    redirect_uri = url_for('google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri=redirect_uri)
+
+@app.route('/login/google/callback')
+def google_callback():
+    try:
+        token = google.authorize_access_token()
+        resp = google.get('userinfo')
+        user_info = resp.json()
+
+        email = user_info['email']
+        name = user_info.get('name', 'User')
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(
+                username=name,
+                email=email,
+                password='google_auth',
+                phone='0000000000',
+                is_verified=True
+            )
+            db.session.add(user)
+            db.session.commit()
+
+        session['user_id'] = user.id
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        flash("Google login failed. Please try again.", "error")
+        return redirect(url_for('login'))
+
 
 @app.route('/product/<int:pid>')
 @login_required
