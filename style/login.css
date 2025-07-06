@@ -1,0 +1,143 @@
+/* login.css */
+
+body {
+  background: linear-gradient(to right, #2193b0, #6dd5ed);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+  color: #2c3e50;
+}
+
+.login-card {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  color: #2c3e50;
+}
+
+.login-card h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-color: #2c5364;
+}
+#login{
+   background-color: #2193b0; 
+    transition: background 0.3s;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #842029;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.separator .line {
+  flex: 1;
+  height: 1px;
+  background-color: #ccc;
+  margin: 0 10px;
+}
+
+.separator span {
+  font-weight: 600;
+  color: #888;
+}
+
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #444;
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.google-btn:hover {
+  background-color: #f7f7f7;
+}
+
+.google-btn img {
+  height: 20px;
+  margin-right: 10px;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 1rem;
+  font-weight: 6700px
+}
+.register-link a{
+    color:#2193b0;
+    text-decoration: none; 
+}
+.register-link a:hover{
+    color: #084556;
+    transition: background 0.3s;
+}
+
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+/* Style for the link */
+.forgot-password a {
+  color: #0077b6;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Hover effect */
+.forgot-password a:hover {
+  text-decoration: none;
+  color: #023e8a;
+}
+
+/* Responsive: center it on small screens */
+@media screen and (max-width: 480px) {
+  .forgot-password {
+    text-align: center;
+  }
+}
+
+
+/* Info section styles */
+.info-section h2 {
+  color: #1e87a5; /* Ocean blue tone */
+  font-weight: 700;
+}
+
+.info-section p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
