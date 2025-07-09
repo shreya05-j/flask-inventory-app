@@ -1,33 +1,61 @@
 {% extends "base.html" %}
+
 {% block content %}
 <div class="page-container">
     <div class="form-card">
         <h2 class="form-title">➕ Add New Product</h2>
-        <form method="post">
-            <label for="name">Name:</label>
-            <input type="text" name="name" required>
 
-            <label for="sku">SKU:</label>
-            <input type="text" name="sku" required>
+        <form method="post" action="{{ url_for('add_product') }}">
+            <!-- Product Name -->
+            <div class="form-group">
+                <label for="name">Product Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter product name" required>
+            </div>
 
-            <label for="stock">Stock:</label>
-            <input type="number" name="stock" min="0" required>
+            <!-- SKU -->
+            <div class="form-group">
+                <label for="sku">SKU (Stock Keeping Unit):</label>
+                <input type="text" id="sku" name="sku" placeholder="Enter unique SKU" required>
+            </div>
 
-            <label for="location">Location:</label>
-            <input type="text" name="location" required>
+            <!-- Stock -->
+            <div class="form-group">
+                <label for="stock">Available Stock:</label>
+                <input type="number" id="stock" name="stock" min="0" placeholder="Enter stock quantity" required>
+            </div>
 
-            <label for="min_threshold">Min Threshold:</label>
-            <input type="number" name="min_threshold" min="0" required>
+            <!-- Location -->
+            <div class="form-group">
+                <label for="location">Storage Location:</label>
+                <input type="text" id="location" name="location" placeholder="Enter storage location" required>
+            </div>
 
-            <label for="max_threshold">Max Threshold:</label>
-            <input type="number" name="max_threshold" min="0" required>
+            <!-- Minimum Threshold -->
+            <div class="form-group">
+                <label for="min_threshold">Minimum Threshold:</label>
+                <input type="number" id="min_threshold" name="min_threshold" min="0" placeholder="Enter minimum threshold" required>
+            </div>
 
-            <label for="base_price">Base Price (₹):</label>
-            <input type="number" name="base_price" step="0.01" min="0" required>
+            <!-- Maximum Threshold -->
+            <div class="form-group">
+                <label for="max_threshold">Maximum Threshold:</label>
+                <input type="number" id="max_threshold" name="max_threshold" min="0" placeholder="Enter maximum threshold" required>
+            </div>
 
-            <button type="submit" class="btn">💾 Add Product</button>
+            <!-- Base Price -->
+            <div class="form-group">
+                <label for="base_price">Base Price (₹):</label>
+                <input type="number" id="base_price" name="base_price" step="0.01" min="0" placeholder="Enter base price" required>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-group">
+                <button type="submit" class="btn">💾 Add Product</button>
+            </div>
         </form>
-        <div style="text-align:center; margin-top:1em;">
+
+        <!-- Navigation -->
+        <div class="form-navigation">
             <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
         </div>
     </div>
