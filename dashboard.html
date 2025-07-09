@@ -1,95 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard - Inventory App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        .price-increase {
-            color: red;
-            font-weight: bold;
-        }
-        .price-decrease {
-            color: green;
-            font-weight: bold;
-        }
-        .price-none {
-            color: black;
-        }
-        .price-na {
-            color: gray;
-            font-style: italic;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <nav>
-        <div class="nav-title">Inventory Dashboard</div>
-        <div>
-            <span style="margin-right:1.5em;">Hello, {{ session.username }}</span>
-            <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
-        </div>
-    </nav>
-    <main>
-        <div class="header-row">
-            <h2>Product Inventory</h2>
-            <div class="header-actions">
-                <form method="get" action="{{ url_for('dashboard') }}" class="search-form">
-                    <input type="text" name="q" placeholder="Search by name, SKU, or location" value="{{ query or '' }}">
-                    <button type="submit" class="btn btn-small">Search</button>
-                </form>
-                <a href="{{ url_for('add_product') }}" class="btn add-btn">+ Add Product</a>
-            </div>
-        </div>
+  <nav>
+    <div class="nav-title">Inventory Dashboard</div>
+    <div>
+      Hello, {{ session.get('user_id') }} |
+      <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+    </div>
+  </nav>
+  <main>
+    <div class="inventory-box">
+      <h2>Product Inventory</h2>
+          <!-- SEARCH FORM -->
+      <form method="get" class="top-bar">
+        <div class="search-container">
+        <input type="text" placeholder="Search by name, SKU, or ID">
+        <button class="search-btn">Search</button>
+        <button id="addProductBtn" class="add-btn">+ Add Product</button>
+      </div>
+      </form>
+      <script>
+  // Replace with actual role from your backend or login logic
+        const userRole = "admin"; // or "user"
 
-        <table class="inventory-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>SKU</th>
-                    <th>Stock</th>
-                    <th>Location</th>
-                    <th>Status</th>
-                    <th>Price</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in inventory %}
-                <tr>
-                    <td>{{ product.name }}</td>
-                    <td>{{ product.sku }}</td>
-                    <td>{{ product.stock }}</td>
-                    <td>{{ product.location }}</td>
-                    <td>
-                        <span class="status {{ product.status|lower|replace(' ', '-') }}">{{ product.status }}</span>
-                    </td>
-                    <td>
-                        {% if product.dynamic_price == 'N/A' %}
-                            <span class="price-na">N/A</span>
-                        {% elif product.price_change == 'increase' %}
-                            <span class="price-increase">₹{{ product.dynamic_price }}</span>
-                        {% elif product.price_change == 'decrease' %}
-                            <span class="price-decrease">₹{{ product.dynamic_price }}</span>
-                        {% else %}
-                            <span class="price-none">₹{{ product.dynamic_price }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="{{ url_for('product_detail', pid=product.id) }}" class="btn btn-small">View</a>
-                            <a href="{{ url_for('edit_product', pid=product.id) }}" class="btn btn-small btn-edit">Edit</a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% if inventory|length == 0 %}
-                <tr>
-                    <td colspan="7" style="text-align:center; color:#888;">No products found.</td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </main>
+        const addBtn = document.getElementById("addProductBtn");
+
+        if (userRole !== "admin") {
+          addBtn.disabled = true;
+          addBtn.style.opacity = "0.6";
+          addBtn.style.cursor = "not-allowed";
+          addBtn.title = "Only admins can add products";
+        } else {
+    // ✅ ACTION: Add your form opening logic here
+          addBtn.addEventListener("click", function () {
+            window.location.href = "/add_product.html";
+      // Example: show modal or redirect to another page
+      // window.location.href = "/add-product.html";
+    });
+  }
+</script>
+
+      <!-- TABLE -->
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Stock</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in inventory %}
+          <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.sku }}</td>
+            <td>{{ product.stock }}</td>
+            <td>{{ product.location }}</td>
+            <td><span class="status">{{ product.status }}</span></td>
+            <td>
+              <span class="{% if product.price_change == 'increase' %}price-up{% elif product.price_change == 'decrease' %}price-down{% endif %}">
+                ₹{{ product.dynamic_price }}
+              </span>
+            </td>
+            <td>
+              <a href="{{ url_for('product_detail', pid=product.id) }}"><button class="btn">View</button></a>
+              {% if role == 'developer' %}
+              <a href="{{ url_for('edit_product', pid=product.id) }}"><button class="btn btn-edit">Edit</button></a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <script>
+        </script>
+      </script>
+    </div>
+  </main>
 </body>
 </html>
