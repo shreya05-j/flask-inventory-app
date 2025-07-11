@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Cart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            padding: 2rem;
+            background: var(--bg-color, #f4f4f4);
+            color: var(--text-color, #222);
+        }
+        h2 {
+            margin-bottom: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg, #fff);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .btn-remove {
+            background-color: #ef4444;
+            color: #fff;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-remove:hover {
+            background-color: #b91c1c;
+        }
+        .btn-checkout {
+            margin-top: 2rem;
+            background-color: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-checkout:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <h2>🛒 Your Cart</h2>
+
+    {% if cart_items %}
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Quantity</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.sku }}</td>
+                <td>1</td>
+                <td>
+                    <form method="post" action="{{ url_for('remove_from_cart', pid=item.id) }}">
+                        <button type="submit" class="btn-remove">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form method="get" action="{{ url_for('checkout') }}">
+        <button type="submit" class="btn-checkout">Proceed to Payment</button>
+    </form>
+
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+</body>
+</html>
