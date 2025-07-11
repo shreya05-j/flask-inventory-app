@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Image</title>
+    <style>
+        body {
+            background: #f0f4f8;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .upload-container {
+            max-width: 400px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            padding: 40px 30px 30px 30px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 24px;
+            color: #333;
+        }
+        .custom-file-label {
+            display: inline-block;
+            padding: 12px 26px;
+            background: #007bff;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 17px;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        .custom-file-label:hover {
+            background: #0056b3;
+        }
+        .file-input {
+            display: none;
+        }
+        .submit-btn {
+            padding: 12px 32px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 17px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .submit-btn:hover {
+            background: #1e7e34;
+        }
+        .uploaded-img {
+            margin-top: 25px;
+            max-width: 220px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 28px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        ul {
+            color: #d9534f;
+            padding-left: 0;
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h2>Upload an Image</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul>
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        <form method="post" enctype="multipart/form-data">
+            <label class="custom-file-label">
+                Choose Image
+                <input type="file" name="file" class="file-input">
+            </label>
+            <br>
+            <button type="submit" class="submit-btn">Upload</button>
+        </form>
+        {% if filename %}
+            <p>Uploaded file: {{ filename }}</p>
+            <img src="{{ url_for('static', filename='uploads/' ~ filename) }}" alt="Uploaded Image" class="uploaded-img">
+        {% endif %}
+        <br>
+        <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
+    </div>
+</body>
+</html>
+
+
+{% if filename %}
+    <p>Uploaded file: {{ filename }}</p>
+    <img src="{{ url_for('static', filename='uploads/' ~ filename) }}" alt="Uploaded Image" class="uploaded-img">
+    <form action="{{ url_for('delete_file', filename=filename) }}" method="post" style="margin-top:10px;">
+        <button type="submit" style="background-color:#dc3545; color:white; border:none; padding:8px 16px; border-radius:5px; cursor:pointer;">
+            Delete Image
+        </button>
+    </form>
+{% endif %}
